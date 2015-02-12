@@ -28,7 +28,8 @@ function OpenIDLoginListener( login , password ) {
 `Modules/OpenID/config.json`
 
 `_DATACLASS_USER` : DataClass where to save your users
-redirect : redirects to when the login is successful
+
+`redirect` : redirects to when the login is successful
 
 ####Warning
 Users with empty passwords will not be able to login after the service activation
