@@ -1,0 +1,15 @@
+﻿{
+	
+	"redirect" : "/",
+	
+	"_SESSION" : {
+	
+		"EMAIL" : "OPENID_EMAIL",
+		
+		"CSRF"	: "OPENID_CSRF"
+	
+	},
+	
+	"_DATACLASS_USER" : "OpenID_USER"
+	
+}
