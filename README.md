@@ -27,12 +27,13 @@ function OpenIDLoginListener( login , password ) {
 
 `Modules/OpenID/config.json`
 
-`_DATACLASS_USER` : DataClass where to save your users
+`_DATACLASS_USER` : DataClass where to save your users ( should contain at least two string fields : `email` and `UID` )
 
 `redirect` : redirects to when the login is successful
 
 ####Warning
-Users with empty passwords will not be able to login after the service activation
+- `require( 'OpenID' ).login` will become your solution's loginlistener.
+- Users with empty passwords will not be able to login after the service activation.
 
 ##Create a new provider module
 
@@ -40,9 +41,9 @@ Module : OpenID-provider-{{providerName}}
 
 Expose two methods :
 
--	`exchangeCodeForToken`
+- `exchangeCodeForToken`
 
--	`getRedirectURL`
+- `getRedirectURL`
 
 Les deux méthodes remontent des exceptions en cas d’erreurs et un retour valide uniquement en cas de réussite.
 Une exception est un objet JSON avec deux champs : name et description
@@ -51,4 +52,7 @@ Une exception est un objet JSON avec deux champs : name et description
 - Add auto discovery component using configuration URL, ex : https://accounts.google.com/.well-known/openid-configuration
 - Declare dependencies in a packages.json file
 - See if it is possible to use the Wakanda Crypto library
+
+##Feature Request / Bug Report
+Please open an issue for any bugs or feature request or contact me directly at `hamzahik@gmail.com`
 
