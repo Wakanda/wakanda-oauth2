@@ -29,7 +29,13 @@ exports.verify = function ( jwt ) {
 };
 
 function b64ToUTF8( str ) {
-
+	
+	var padToAdd = str.length % 4;
+	
+	for(var i = 0 ; i < padToAdd; ++i){
+	  str+="=";
+	}
+	
 	return (new Buffer( str, 'base64' )).toString('utf8');
 
 };
