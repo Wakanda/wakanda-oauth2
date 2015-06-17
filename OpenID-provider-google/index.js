@@ -64,7 +64,8 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
     
     var userInfo		= JWT.verify( parsedResponse.id_token ).body;
     
-    var parsedUserInfo	= JSON.parse( userInfo );
+    //The replace part is a workaround for a base64 encoding issue
+    var parsedUserInfo	= JSON.parse( userInfo.replace(/\0/g,"") );
     
     return {
     	
