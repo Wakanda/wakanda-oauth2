@@ -123,7 +123,9 @@ function callback( request , response ) {
 function createOpenIDSession( info ) {
 
 	sessionStorage[ config._SESSION.EMAIL ] = info.email;
-
+	
+	sessionStorage[ config._SESSION.TOKEN ] = info.token;
+	
 };
 
 function parseQueryString(queryString) {

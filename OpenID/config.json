@@ -6,7 +6,9 @@
 	
 		"EMAIL" : "OPENID_EMAIL",
 		
-		"CSRF"	: "OPENID_CSRF"
+		"CSRF"	: "OPENID_CSRF",
+		
+		"TOKEN" : "OPENID_TOKEN"
 	
 	},
 	

@@ -69,7 +69,8 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
     
     return {
     	
-    	email : parsedUserInfo.email
+    	email : parsedUserInfo.email,
+    	token : parsedResponse.access_token
     	
     };
 
