@@ -31,6 +31,13 @@ function OpenIDLoginListener( login , password ) {
 
 `redirect` : redirects to when the login is successful
 
+5- Add login links to your App
+
+```
+/OpenIDLogin?provider={{providerName}}
+```
+
+
 ####Warning
 - `require( 'OpenID' ).login` will become your solution's loginlistener.
 - Users with empty passwords will not be able to login after the service activation.
