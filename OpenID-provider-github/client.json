@@ -1,0 +1,9 @@
+﻿{
+
+    "client_id": "2adde9226e84f7246e66",
+    "client_secret": "6d2e2e36e5f848eab4c66700210772ca9ffe185c",
+    "redirect_uri": "http://localhost:8081/oauth2callback",
+    "baseUrl":"http://localhost:8081",
+    "scope": "user:email"
+
+}
