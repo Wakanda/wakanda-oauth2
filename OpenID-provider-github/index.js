@@ -1,4 +1,3 @@
-
 var client	= require( './client' );
 
 
@@ -41,11 +40,21 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	
 	xhr.setRequestHeader( 'Content-Type' , 'application/x-www-form-urlencoded' );
 	
-	xhr.setRequestHeader( 'Accept', 'application/json'  );
+	xhr.setRequestHeader( 'Accept', 'application/json'  );	
 	
-	
-	
-    xhr.send( body );
+    try{
+	 	
+		xhr.send(body);
+	 	
+	 }catch(e){
+	 	throw {
+	    	
+	    	name : "Network Error",
+	    	
+	    	description : "Couldn't contact Github."
+	    	
+	    };
+	 }
     
     
   	var response		= xhr.responseText;
@@ -66,37 +75,39 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	    	
 	    	description : parsedResponse.error_description
 	    	
-	    };
-    
+	    };    
     }
-    
-    /*
-	 * Verify token and get account's details.
-	 */
-	 /*
-    var JWT				= require( 'JWT' );
-    
-    var userInfo		= JWT.verify( parsedResponse.access_token ).body;
-    //The replace part is a workaround for a base64 encoding issue
-    var parsedUserInfo	= JSON.parse( userInfo.replace(/\0/g,"") );
-    //*/
-    
+       
     /**
 	  * get user infos
 	  */
 	 
 	 xhr = new XMLHttpRequest();
-	 xhr.open( 'GET' , 'https://api.github.com/user?access_token=' + parsedResponse.access_token , false );
-	 xhr.send();
+	 
+	 xhr.open( 'GET' , 'https://api.github.com/user/emails?access_token=' + parsedResponse.access_token , false );
+	 
+	 try{
+	 	
+		xhr.send();
+	 	
+	 }catch(e){
+	 	throw {
+	    	
+	    	name : "Network Error",
+	    	
+	    	description : "Couldn't contact Github."
+	    	
+	    };
+	 }
+	 
 	 
 	 
 	 var r = JSON.parse(xhr.responseText);
 	 
     
     return {
-    	//email : parsedUserInfi.email
-    	email : r.email,
-    	token : r.access_token
+    	email : r[0].email,
+    	token : parsedResponse.access_token
     	
     };
 
