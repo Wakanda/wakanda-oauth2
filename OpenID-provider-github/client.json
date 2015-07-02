@@ -4,6 +4,6 @@
     "client_secret": "xxxxxxxxxxxxxxxxx",
     "redirect_uri": "http://myappdomain.com/oauth2callback",
     "baseUrl":"http://myappdomain.com.com",
-    "scope": "openid email"
+    "scope": "user:email"
 
 }
