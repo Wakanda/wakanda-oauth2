@@ -27,9 +27,10 @@ function OpenIDLoginListener( login , password ) {
 
 `Modules/OpenID/config.json`
 
-`_DATACLASS_USER` : DataClass where to save your users ( should contain at least two string fields : `email` and `UID` )
+- `_DATACLASS_USER` : DataClass where to save your users ( should contain at least two string fields : `email` and `UID` ).
+- `redirect` : redirects to when the login is successful
 
-`redirect` : redirects to when the login is successful
+**Don't forget to make your users DataClass unavailable in the client side, at least by making it `Public On Server`**
 
 5- Add login links to your App
 
