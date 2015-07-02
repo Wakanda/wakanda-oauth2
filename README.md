@@ -5,7 +5,7 @@ Extensible OpenID Connect Client For Wakanda Server supporting Google and Facebo
 
 1- Declare `Modules/OpenID/index.js` as a Wakanda Service
 
-2- Add the following code to your solution's `required.json`
+2- Add the following code to your solution's `required.js`
 
 ```javascript
 function OpenIDLoginListener( login , password ) {
