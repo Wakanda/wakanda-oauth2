@@ -5,7 +5,9 @@ Extensible oauth2 Client For Wakanda Server supporting Dropbox, Facebook, Github
 ##How To
 
 1- Declare `Modules/oauth2/index.js` as a Wakanda Service
+
 2- Add the following code to your solution's `required.js`
+
 ```javascript
 function oauth2LoginListener( login, password ) {
 	var response = require( 'oauth2' ).login( login, password );
@@ -15,6 +17,7 @@ function oauth2LoginListener( login, password ) {
 3- Configure your providers
 
 `Modules/oauth2-provider-facebook/client.json`
+
 `Modules/oauth2-provider-google/client.json`
 
 4- Configure your login process 
@@ -26,6 +29,7 @@ function oauth2LoginListener( login, password ) {
 `redirect` : redirects to when the login is successful
 
 5- Add login links to your App
+
 ```
 /oauth2login?provider={{providerName}}
 ```
@@ -36,6 +40,7 @@ function oauth2LoginListener( login, password ) {
 ##Create a new provider module
 
 1- Create a Module : oauth2-provider-{{providerName}}
+
 2- Which exposes two methods :
 - `exchangeCodeForToken()`
 - `getRedirectURL()`
