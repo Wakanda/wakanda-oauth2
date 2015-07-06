@@ -1,9 +1,7 @@
 ﻿{
-
     "client_id": "xxxxxxxxxxxxxxxxx",
     "client_secret": "xxxxxxxxxxxxxxxxx",
     "redirect_uri": "http://myappdomain.com/oauth2callback",
     "baseUrl":"http://myappdomain.com",
     "scope": "openid email"
-
 }

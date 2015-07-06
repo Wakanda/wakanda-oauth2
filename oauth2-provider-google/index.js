@@ -1,7 +1,6 @@
 ﻿var client	= require( './client' );
 
 exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
-	
 	/*
 	 * Check for errors returned in the URI
 	 */	 

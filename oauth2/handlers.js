@@ -1,7 +1,7 @@
 ﻿ var config	= require( './config' );
  
 /*
- * OpenID Connect Initiator
+ * oauth2 Initiator
  *  - CSRF protection : Generate and store a UUID in the user's session
  *  - Dispatch the UUID to the selected provider's module
  *  - Get back a redirection URL to OP
@@ -15,7 +15,7 @@
 	
 	var params		= parseQueryString( urlQuery );
     
-    var redirectTo	= require( 'OpenID-provider-' + params.provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : params.provider } );
+    var redirectTo	= require( 'oauth2-provider-' + params.provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : params.provider } );
 
     sessionStorage[ config._SESSION.CSRF ] = CSRF;
     
@@ -28,13 +28,13 @@
 };
 
 /*
- * OpenID Connect Callback
+ * oauth2 Callback
  *  - CSRF protection : Compare received UUID with the one in the user's session
  *  - Call the provider's module to exchange received Code for a Token
  *  - TODO : Verify token
  */
 function callback( request , response ) {
-
+	
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
 	
 	var params		= parseQueryString( urlQuery );
@@ -86,12 +86,12 @@ function callback( request , response ) {
 	 */
 	try {
 		
-		var exchangeResponse = require( 'OpenID-provider-' + provider ).exchangeCodeForToken( params );
+		var exchangeResponse = require( 'oauth2-provider-' + provider ).exchangeCodeForToken( params );
 	
 	} catch( e ) {
 	
 		request.statusCode	= 500;
-    	
+
     	return JSON.stringify({
     		
     		type : 'error',
@@ -106,7 +106,7 @@ function callback( request , response ) {
     
     if ( exchangeResponse.email ) {
     	
-    	createOpenIDSession( exchangeResponse );
+    	createOAuth2Session( exchangeResponse );
     	
     	loginByPassword( exchangeResponse.email );
     	
@@ -120,7 +120,7 @@ function callback( request , response ) {
 
 };
 
-function createOpenIDSession( info ) {
+function createOAuth2Session( info ) {
 
 	sessionStorage[ config._SESSION.EMAIL ] = info.email;
 	

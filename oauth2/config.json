@@ -1,0 +1,17 @@
+﻿{
+	
+	"redirect" : "/",
+	
+	"_SESSION" : {
+	
+		"EMAIL" : "OAUTH2_EMAIL",
+		
+		"CSRF"	: "OAUTH2_CSRF",
+		
+		"TOKEN" : "OAUTH2_TOKEN"
+	
+	},
+	
+	"_DATACLASS_USER" : "OAUTH2_USER"
+	
+}

@@ -18,14 +18,14 @@ exports.postMessage = function(message) {
 
     if (message.name === "httpServerWillStop") {
     	
-        removeHttpRequestHandler('^/OpenIDLogin', handlersFilePath, 'init');
+        removeHttpRequestHandler('^/oauth2login', handlersFilePath, 'init');
 		removeHttpRequestHandler('^/oauth2callback', handlersFilePath, 'callback');
 		
     } else if (message.name === "httpServerDidStart") {
         
-        directory.setLoginListener( 'OpenIDLoginListener' , 'Admin' );
+        directory.setLoginListener( 'oauth2LoginListener' , 'Admin' );
         
-        addHttpRequestHandler('^/OpenIDLogin', handlersFilePath, 'init');
+        addHttpRequestHandler('^/oauth2login', handlersFilePath, 'init');
 		addHttpRequestHandler('^/oauth2callback', handlersFilePath, 'callback');
         
     }
@@ -35,7 +35,7 @@ exports.postMessage = function(message) {
 exports.login	= function( login , password ) {
 	
 	/*
-	 * If a password was given, then the user should not be an OpenID user
+	 * If a password was given, then the user should not be an oauth2 user
 	 */
 	if ( typeof password === 'string'  && password.length > 0 ) {
 	
@@ -46,7 +46,7 @@ exports.login	= function( login , password ) {
 		} else {
 			
 			/*
-			 * The login is not already used by an OpenID account, we can let the internal directory handle the login
+			 * The login is not already used by an oauth2 account, we can let the internal directory handle the login
 			 */
 			return false;
 		
@@ -54,7 +54,7 @@ exports.login	= function( login , password ) {
 	}
 	
 	/*
-	 * Empty passwords are not allowed for local authentication and are reserved for OpenID Connect
+	 * Empty passwords are not allowed for local authentication and are reserved for oauth2 Connect
 	 */
 	if ( password === '' ) {
 		
