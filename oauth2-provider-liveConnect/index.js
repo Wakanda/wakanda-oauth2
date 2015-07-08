@@ -41,17 +41,12 @@ function getRedirectURL( params )
  * @param {string} params.provider - Provider which grant the authorisation & token
  * 
  * @return {string} partial url with parameters
+ * @throw {Object} error oauth2 errors
+ * @throw {Object} error.name
+ * @throw {Object} error.description
  */
 function exchangeCodeForToken( params )
 {
-	/*
-	 * Check for errors returned in the URI
-	 */	 
-	if ( params.error )
-		return {
-	    	type	: 'error',
-	    	error	: params.error[ 0 ]
-	    };
 	
 	/*
 	 * Request token to provider (windows live)

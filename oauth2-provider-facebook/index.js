@@ -2,21 +2,6 @@
 
 exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	
-	/*
-	 * Check for errors returned in the URI
-	 */	 
-	if ( params.error ) {
-	
-		throw {
-    	
-	    	name : params.error[ 0 ],
-	    	
-	    	description : params.error_description[ 0 ]
-	    	
-	    };
-	
-	};
-
 	var xhr = new XMLHttpRequest();
     
     xhr.open( 'POST' , getEndpointFromParams('https://graph.facebook.com/oauth/access_token',{

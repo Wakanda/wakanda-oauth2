@@ -40,18 +40,12 @@ function getRedirectURL( params )
  * @param {string} params.provider - Provider which grant the authorisation & token
  * 
  * @return {string} partial url with parameters
+ * @throw {Object} error oauth2 errors
+ * @throw {Object} error.name
+ * @throw {Object} error.description
  */
 function exchangeCodeForToken( params )
 {
-	/*
-	 * Check for errors returned in the URI
-	 */	 
-	if ( params.error )
-		return {
-	    	type	: 'error',
-	    	error	: params.error[ 0 ]
-	    };
-	
 	/*
 	 * Request token to provider (dropbox)
 	 * https://blogs.dropbox.com/developers/2013/07/using-oauth-2-0-with-the-core-api/
@@ -96,7 +90,7 @@ function exchangeCodeForToken( params )
 	    	name		: userInfo.error.type,
 	    	description	: userInfo.error.message
 	    };
-    
+        
     /*
      * return the access_token and the email for wakanda authentification
      */

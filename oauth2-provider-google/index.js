@@ -1,20 +1,6 @@
 ﻿var client	= require( './client' );
 
 exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
-	/*
-	 * Check for errors returned in the URI
-	 */	 
-	if ( params.error ) {
-	
-		return {
-    	
-	    	type : 'error',
-	    	
-	    	error : params.error[ 0 ]
-	    	
-	    };
-	
-	};
 
 	var xhr = new XMLHttpRequest();
     
