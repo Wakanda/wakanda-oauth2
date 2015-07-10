@@ -2,8 +2,8 @@
 /*
  * Require the client conf file
  */
-
 var client	= require( './client' );
+var tools = require('../oauth2/tools');
 
 /**
  * 
@@ -21,7 +21,7 @@ function getRedirectURL( params )
 	 * Request user authorisation to provider (windows live)
 	 * https://msdn.microsoft.com/fr-fr/library/hh243647.aspx#authcodegrant
 	 */
-	var redirectTo = getEndpointFromParams( 'https://login.live.com/oauth20_authorize.srf' , {
+	var redirectTo = tools.getEndpointFromParams( 'https://login.live.com/oauth20_authorize.srf' , {
         client_id		: client.client_id,
         response_type	: 'code',
         scope			: client.scope,
@@ -53,7 +53,7 @@ function exchangeCodeForToken( params )
 	 * https://msdn.microsoft.com/fr-fr/library/hh243647.aspx#authcodegrant
 	 */
 	var xhr = new XMLHttpRequest();
-    var body = formBodyFromJSON({
+    var body = tools.formBodyFromJSON({
         'code'			: params[ 'code' ][ 0 ],
         'client_id'		: client.client_id,
         'client_secret'	: client.client_secret, 
@@ -119,43 +119,6 @@ function getUserInfo( token )
 	var parsedResponse	= JSON.parse( response );
 	
 	return parsedResponse;
-}
-
-/**
- * Create an url with base URL and params
- * 
- * @param {string} baseUrl - base url of the application
- * @param {Object} params - convert key:value to key=value
- * 
- * @return {string} url - the final url with given params
- */
-function getEndpointFromParams( baseUrl , params )
-{
-	var url = baseUrl + '?';
-    for ( var param in params )
-    {
-    	url += param +'='+ encodeURIComponent( params[ param ] ) +'&'
-    }
-    
-    return url;
-}
-
-/**
- * Stringify params for body XHR
- * 
- * @param {Object} params - convert key:value to key=value
- * 
- * @return {string} body - the stringify params to append inside a body XHR
- */
-function formBodyFromJSON( params )
-{
-	var body = "";
-    for ( var key in params )
-    {
-    	body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
-    }
-    
-    return body;
 }
 
 exports.getRedirectURL = getRedirectURL;

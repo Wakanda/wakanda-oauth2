@@ -1,10 +1,11 @@
 ﻿var client	= require( './client' );
+var tools = require('../oauth2/tools');
 
 exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 
 	var xhr = new XMLHttpRequest();
     
-    var body = formBodyFromJSON({
+    var body = tools.formBodyFromJSON({
         
         'code' : params[ 'code' ][ 0 ],
         
@@ -63,7 +64,7 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 
 exports.getRedirectURL = function( params ){
 
-	var redirectTo	= getEndpointFromParams( 'https://accounts.google.com/o/oauth2/auth' , {
+	var redirectTo	= tools.getEndpointFromParams( 'https://accounts.google.com/o/oauth2/auth' , {
     
         client_id : client.client_id,
         
@@ -78,34 +79,5 @@ exports.getRedirectURL = function( params ){
     });
     
     return redirectTo;
-
-};
-
-
-function getEndpointFromParams( baseUrl , params ){
-
-	var url = baseUrl + '?';
-    
-    for ( var param in params ) {
-    
-    	url += param + '=' + encodeURIComponent( params[ param ] ) + '&'
-    
-    };
-    
-    return url;
-
-};
-
-function formBodyFromJSON( params ){
-
-	var body = "";
-    
-    for ( var key in params ) {
-    
-    	body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
-    
-    };
-    
-    return body;
 
 };

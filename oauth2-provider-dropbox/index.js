@@ -2,14 +2,14 @@
 /*
  * Require the client conf file
  */
-
 var client	= require( './client' );
+var tools	= require( '../oauth2/tools' );
 
 /**
  * 
  * Request an user authorisation to the provider (dropbox)
  *
- * @param {Object} params - 
+ * @param {Object} params - redirect url parameters
  * @param {string} params.CSRF - User UUID
  * @param {string} params.provider - Provider which grant the authorisation & token
  * 
@@ -21,7 +21,7 @@ function getRedirectURL( params )
 	 * Request user authorisation to provider (dropbox)
 	 * https://blogs.dropbox.com/developers/2013/07/using-oauth-2-0-with-the-core-api/
 	 */
-	var redirectTo = getEndpointFromParams( 'https://www.dropbox.com/1/oauth2/authorize' , {
+	var redirectTo = tools.getEndpointFromParams( 'https://www.dropbox.com/1/oauth2/authorize' , {
         client_id		: client.client_id,
         response_type	: 'code',
         redirect_uri	: (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
@@ -33,16 +33,16 @@ function getRedirectURL( params )
 
 /**
  * 
- * Request a authenfication token (access_token) to the provider 
+ * Request an authenfication token (access_token) to the provider 
  *
  * @param {Object} params
  * @param {string} params.CSRF - User UUID
  * @param {string} params.provider - Provider which grant the authorisation & token
  * 
  * @return {string} partial url with parameters
- * @throw {Object} error oauth2 errors
- * @throw {Object} error.name
- * @throw {Object} error.description
+ * @throw {Object} error - oauth2 errors
+ * @throw {Object} error.error - error name/code
+ * @throw {Object} error.error_description - error description
  */
 function exchangeCodeForToken( params )
 {
@@ -51,7 +51,7 @@ function exchangeCodeForToken( params )
 	 * https://blogs.dropbox.com/developers/2013/07/using-oauth-2-0-with-the-core-api/
 	 */
 	var xhr = new XMLHttpRequest();
-    var body = formBodyFromJSON({
+    var body = tools.formBodyFromJSON({
         'code'			: params[ 'code' ][ 0 ],
         'client_id'		: client.client_id,
         'client_secret'	: client.client_secret, 
@@ -73,8 +73,8 @@ function exchangeCodeForToken( params )
 	 */
     if ( parsedResponse.error )
     	throw {
-	    	name		: parsedResponse.error,
-	    	description	: parsedResponse.error_description
+	    	error             : parsedResponse.error,
+	    	error_description : parsedResponse.error_description
 	    };
 
 	/*
@@ -87,8 +87,8 @@ function exchangeCodeForToken( params )
 	 */
     if ( userInfo.error )
     	throw {
-	    	name		: userInfo.error.type,
-	    	description	: userInfo.error.message
+	    	error		: userInfo.error.type,
+	    	error_description	: userInfo.error.message
 	    };
         
     /*
@@ -119,42 +119,5 @@ function getUserInfo( token )
 	return parsedResponse;
 }
 
-/**
- * Create an url with base URL and params
- * 
- * @param {string} baseUrl - base url of the application
- * @param {Object} params - convert key:value to key=value
- * 
- * @return {string} url - the final url with given params
- */
-function getEndpointFromParams( baseUrl , params )
-{
-	var url = baseUrl + '?';
-    for ( var param in params )
-    {
-    	url += param +'='+ encodeURIComponent( params[ param ] ) +'&'
-    }
-    
-    return url;
-}
-
-/**
- * Stringify params for body XHR
- * 
- * @param {Object} params - convert key:value to key=value
- * 
- * @return {string} body - the stringify params to append inside a body XHR
- */
-function formBodyFromJSON( params )
-{
-	var body = "";
-    for ( var key in params )
-    {
-    	body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
-    }
-    
-    return body;
-}
-
 exports.getRedirectURL = getRedirectURL;
-exports.exchangeCodeForToken  = exchangeCodeForToken;
+exports.exchangeCodeForToken = exchangeCodeForToken;
