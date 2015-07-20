@@ -41,8 +41,8 @@ function getRedirectURL( params )
  * 
  * @return {string} partial url with parameters
  * @throw {Object} error - oauth2 errors
- * @throw {Object} error.error - error name/code
- * @throw {Object} error.error_description - error description
+ * @throw {Object} error.name - error name/code
+ * @throw {Object} error.description - error description
  */
 function exchangeCodeForToken( params )
 {
@@ -60,7 +60,14 @@ function exchangeCodeForToken( params )
 	});
     xhr.open( 'POST' , 'https://api.dropbox.com/1/oauth2/token' , false );
     xhr.setRequestHeader( 'Content-Type' , 'application/x-www-form-urlencoded' );
-    xhr.send( body );
+    try{
+        xhr.send( body );
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://api.dropbox.com/1/oauth2/token failed'
+	    };
+	}
     
     /*
      * Get a token in response if client has authorized it (see getRedirectURL() above)
@@ -73,8 +80,8 @@ function exchangeCodeForToken( params )
 	 */
     if ( parsedResponse.error )
     	throw {
-	    	error             : parsedResponse.error,
-	    	error_description : parsedResponse.error_description
+	    	name             : parsedResponse.error,
+	    	description : parsedResponse.error_description
 	    };
 
 	/*
@@ -87,8 +94,8 @@ function exchangeCodeForToken( params )
 	 */
     if ( userInfo.error )
     	throw {
-	    	error		: userInfo.error.type,
-	    	error_description	: userInfo.error.message
+	    	name		: userInfo.error.type,
+	    	description	: userInfo.error.message
 	    };
         
     /*
@@ -111,8 +118,15 @@ function getUserInfo( token )
 {
 	var xhr	= new XMLHttpRequest();
 	xhr.open( 'GET' , 'https://api.dropbox.com/1/account/info?access_token=' + token , false );
-	xhr.send();
-
+	try{
+        xhr.send();
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://api.dropbox.com/1/account/info?access_token=' + token + ' failed'
+	    };
+	}
+    
 	var response		= xhr.responseText;
 	var parsedResponse	= JSON.parse( response );
 	

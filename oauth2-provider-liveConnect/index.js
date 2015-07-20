@@ -24,7 +24,7 @@ function getRedirectURL( params )
 	var redirectTo = tools.getEndpointFromParams( 'https://login.live.com/oauth20_authorize.srf' , {
         client_id		: client.client_id,
         response_type	: 'code',
-        scope			: client.scope,
+        scope			: params.scope || client.scope,
         redirect_uri	: (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
         state			: 'CSRF='+ params.CSRF +'&from='+ params.provider
     });
@@ -62,7 +62,14 @@ function exchangeCodeForToken( params )
 	});
     xhr.open( 'POST' , 'https://login.live.com/oauth20_token.srf' , false );
     xhr.setRequestHeader( 'Content-Type' , 'application/x-www-form-urlencoded' );
-    xhr.send( body );
+    try{
+        xhr.send( body );
+    }catch(e){
+    	throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://login.live.com/oauth20_token.srf failed'
+	    };
+    }
     
     /*
      * Get a token in response if client has authorized it (see getRedirectURL() above)
@@ -83,7 +90,7 @@ function exchangeCodeForToken( params )
 	 * Get user info (email needed) from provider (windows live)
 	 */
   	var userInfo = getUserInfo( parsedResponse.access_token );
-  	
+
   	/*
 	 * Check for errors returned in the body
 	 */
@@ -111,10 +118,16 @@ function exchangeCodeForToken( params )
  */
 function getUserInfo( token )
 {
-	var xhr	= new XMLHttpRequest();
-	xhr.open( 'GET' , 'https://apis.live.net/v5.0/me?access_token=' + token , false );
-	xhr.send();
-
+    var xhr	= new XMLHttpRequest();
+    xhr.open( 'GET' , 'https://apis.live.net/v5.0/me?access_token=' + token , false );
+    try{
+    	xhr.send();
+    }catch(e){
+    	throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://apis.live.net/v5.0/me?access_token=' + token + ' failed'
+	    };
+    }
 	var response		= xhr.responseText;
 	var parsedResponse	= JSON.parse( response );
 	

@@ -33,6 +33,9 @@ function oauth2LoginListener( login, password ) {
 ```
 /oauth2login?provider={{providerName}}
 ```
+```
+/oauth2login?provider={{providerName}}&scope={{providerScope}}
+```
 ####Warning
 - `require( 'oauth2' ).login` will become your solution's loginlistener.
 - Users with empty passwords will not be able to login after the service activation.

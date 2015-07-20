@@ -22,8 +22,14 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
     xhr.open( 'POST' , 'https://www.googleapis.com/oauth2/v3/token' , false );
     
     xhr.setRequestHeader( 'Content-Type' , 'application/x-www-form-urlencoded' );
-    
-    xhr.send( body );
+    try{
+        xhr.send( body );
+    }catch(e){
+    	throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://www.googleapis.com/oauth2/v3/token failed'
+	    };
+    }
     
   	var response		= xhr.responseText;
   	var parsedResponse	= JSON.parse( response );
@@ -31,33 +37,23 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
     /*
 	 * Check for errors returned in the body
 	 */
-    if ( parsedResponse.error ) {
-    
+    if ( parsedResponse.error )
     	throw {
-	    	
-	    	name : parsedResponse.error,
-	    	
-	    	description : parsedResponse.error_description
-	    	
+	    	name          : parsedResponse.error,
+	    	description   : parsedResponse.error_description
 	    };
-    
-    }
-    
+
     /*
 	 * Verify token and get account's details.
-	 */
+     */
     var JWT				= require( 'JWT' );
-    
     var userInfo		= JWT.verify( parsedResponse.id_token ).body;
-    
     //The replace part is a workaround for a base64 encoding issue
     var parsedUserInfo	= JSON.parse( userInfo.replace(/\0/g,"") );
     
     return {
-    	
     	email : parsedUserInfo.email,
     	token : parsedResponse.access_token
-    	
     };
 
 };
@@ -70,7 +66,7 @@ exports.getRedirectURL = function( params ){
         
         response_type : 'code',
         
-        scope : client.scope,
+        scope : params.scope || client.scope,
         
         redirect_uri : (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
         

@@ -28,15 +28,12 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	 	
 		xhr.send(body);
 	 	
-	 }catch(e){
-	 	throw {
-	    	
-	    	name : "Network Error",
-	    	
-	    	description : "Couldn't contact Github."
-	    	
+    }catch(e){
+    	throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://github.com/login/oauth/access_token failed'
 	    };
-	 }
+    }
     
     
   	var response		= xhr.responseText;
@@ -72,15 +69,12 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	 	
 		xhr.send();
 	 	
-	 }catch(e){
-	 	throw {
-	    	
-	    	name : "Network Error",
-	    	
-	    	description : "Couldn't contact Github."
-	    	
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://api.github.com/user/emails?access_token=' + token + ' failed'
 	    };
-	 }
+	}
 	 
 	 
 	 
@@ -103,7 +97,7 @@ exports.getRedirectURL = function( params ){
         
         //response_type : 'code',
         
-        scope : client.scope,
+        scope : params.scope || client.scope,
         
         redirect_uri : (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
         

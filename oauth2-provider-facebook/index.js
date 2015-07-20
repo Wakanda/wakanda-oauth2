@@ -18,9 +18,15 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
         'grant_type' : 'authorization_code'
     
     }) , false );
-    
-    xhr.send();
-    
+    try{
+        xhr.send();
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://graph.facebook.com/oauth/access_token failed'
+	    };
+	}
+
   	var response		= xhr.responseText;
   	var parsedResponse	= tools.parseQueryString( response );
   	
@@ -72,7 +78,7 @@ exports.getRedirectURL = function( params ){
         
         response_type : 'code',
         
-        scope : client.scope,
+        scope : params.scope || client.scope,
         
         redirect_uri : (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
         
@@ -89,9 +95,15 @@ function getUserInfo( token ) {
 	var xhr	= new XMLHttpRequest();
 	
 	xhr.open( 'GET' , 'https://graph.facebook.com/me?access_token=' + token , false );
-	
-	xhr.send();
-	
+	try{
+	   xhr.send();
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://graph.facebook.com/me?access_token=' + token + ' failed'
+	    };
+	}
+    
 	var response		= xhr.responseText;
 	
 	var parsedResponse	= JSON.parse( response );
