@@ -1,5 +1,6 @@
-﻿ var config		= require( './config' );
- var errorCode	= require( './error' );
+﻿ var config	= require( './config' );
+ var error	= require( './error' );
+ var tools = require('./tools');
  
 /*
  * oauth2 Initiator
@@ -14,16 +15,16 @@
 	
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
 	
-	var params		= parseQueryString( urlQuery );
-    
-    var redirectTo	= require( 'oauth2-provider-' + params.provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : params.provider } );
+	var params		= tools.parseQueryString( urlQuery );
+
+    var redirectTo	= require( 'oauth2-provider-' + params.provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : params.provider, 'scope': params.scope } );
 
     sessionStorage[ config._SESSION.CSRF ] = CSRF;
     
     response.headers['location']	= redirectTo;
     
     response.statusCode				= 302;
-    
+
     return '';
 
 };
@@ -35,49 +36,33 @@
  *  - TODO : Verify token
  */
 function callback( request , response ) {
-	
+
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
-	var params		= parseQueryString( urlQuery );
-	var state		= ( typeof params.state[ 0 ] == 'string' ) ? parseQueryString( params.state[ 0 ] ) : undefined;
+	var params		= tools.parseQueryString( urlQuery );
+	var state		= ( typeof params.state[ 0 ] == 'string' ) ? tools.parseQueryString( params.state[ 0 ] ) : undefined;
 	var provider	= state.from[ 0 ];
 
 	/**
-	 * Check if user rejects authorisation
-	 * Redirect on wakanda failure page. Return through url params a wakanda 'error_code' and 'error_name'
+	 * Check provider authorisation error
+	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
 	if ( params.error )
-	{
-		var error = errorCode['1'];
-		console.error(provider +' oauth2 error: ', error);
-    	response.statusCode	= 307;
-    	response.headers['location'] = config.redirectOnFailure +'?error_code='+ error.code +'&error_name='+ error.name;
-		return response;
-	}
+		return error.redirectUrl(response, params.error, params.error_description);
 	
 	/**
 	 * Check if state parameter value is defined
-	 * Redirect on wakanda failure page. Return through url params a wakanda 'error_code' and 'error_name'
+	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
 	if ( typeof state == 'undefined' )
-	{
-		var error = errorCode['2'];
-		console.error(provider +' oauth2 error: ', error);
-    	response.statusCode	= 307;
-    	response.headers['location'] = config.redirectOnFailure +'?error_code='+ error.code +'&error_name='+ error.name;
-		return response;
-	}
+		return error.redirectUrl(response, 'missing_state');
 	
 	/*
 	 * Verify that the CSRF parameter value corresponds to the user's session.
-	 * Redirect on wakanda failure page. Return through url params a wakanda 'error_code' and 'error_name'
+	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
-    if ( ! sessionStorage[ config._SESSION.CSRF ] && sessionStorage[ config._SESSION.CSRF ] != state[ 'CSRF' ][ 0 ] ) {
-		var error = errorCode['3'];
-		console.error(provider +' oauth2 error: ', error);
-    	response.statusCode	= 307;
-    	response.headers['location'] = config.redirectOnFailure +'?error_code='+ error.code +'&error_name='+ error.name;
-		return response;
-    }
+
+    if ( ! sessionStorage[ config._SESSION.CSRF ] && sessionStorage[ config._SESSION.CSRF ] != state[ 'CSRF' ][ 0 ] )
+		return error.redirectUrl(response, 'invalid_CSRF');
     
     /*
 	 * Call the provider's module to exchange received Code for a Token.
@@ -90,36 +75,26 @@ function callback( request , response ) {
 	} catch( e ) {
 		/**
 		 * Handle oauth2 errors
-		 * Redirect on wakanda failure page. Return through url params a wakanda 'error_code', provider 'error_name' and 'error_description'
+		 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 		 */
-		var error = errorCode['3'];
-		console.error(provider +' oauth2 error: ', error);
-		response.statusCode	= 307;
-    	response.headers['location'] = config.redirectOnFailure +'?error_code='+ error.code +'&error_name='+ e.name +'&error_description='+ e.description;
-		return response;
+		return error.redirectUrl(response, e.name, e.description);
 	}
-    
+
 	/**
 	 * Check if user.email is returned
-	 * Redirect on wakanda failure page. Return through url params a wakanda 'error_code' and 'error_name'
+	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
     if ( !exchangeResponse.email )
-	{
-		var error = errorCode['4'];
-		console.error(provider +' oauth2 error: ', error);
-		response.statusCode	= 307;
-    	response.headers['location'] = config.redirectOnFailure +'?error_code='+ error.code +'&error_name='+ error.name;
-		return response;
-	}
+		return error.redirectUrl(response, 'missing_user_email');
 	
 	/**
-	 * oauth2 authentification success. Create a Wakanda user session.
-	 * @return success
+	 * oauth2 authentification success. Create/Update a Wakanda user session.
 	 */
     createOAuth2Session( exchangeResponse );
 	loginByPassword( exchangeResponse.email );
 	response.headers['location'] = config.redirectOnSuccess;
 	response.statusCode = 302;
+	
 	return response;
 }
 
@@ -131,12 +106,3 @@ function createOAuth2Session( info ) {
 	
 };
 
-function parseQueryString(queryString) {
-	
-	var qd = {};
-	
-    queryString.split("&").forEach(function(item) {var k = item.split("=")[0], v = decodeURIComponent(item.split("=")[1]); (k in qd) ? qd[k].push(v) : qd[k] = [v,]});
-    
-    return qd;
-    
-};

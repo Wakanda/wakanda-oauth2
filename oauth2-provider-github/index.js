@@ -1,11 +1,11 @@
 var client	= require( './client' );
-
+var tools = require('../oauth2/tools');
 
 exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 
 	var xhr = new XMLHttpRequest();
     
-    var body = formBodyFromJSON({
+    var body = tools.formBodyFromJSON({
         
         'code' : params[ 'code' ][ 0 ],
         
@@ -18,9 +18,6 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
     
 	});
 	
-	
-	 
-	 
 	xhr.open( 'POST' , 'https://github.com/login/oauth/access_token' , false );
 	
 	xhr.setRequestHeader( 'Content-Type' , 'application/x-www-form-urlencoded' );
@@ -31,15 +28,12 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	 	
 		xhr.send(body);
 	 	
-	 }catch(e){
-	 	throw {
-	    	
-	    	name : "Network Error",
-	    	
-	    	description : "Couldn't contact Github."
-	    	
+    }catch(e){
+    	throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://github.com/login/oauth/access_token failed'
 	    };
-	 }
+    }
     
     
   	var response		= xhr.responseText;
@@ -75,15 +69,12 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	 	
 		xhr.send();
 	 	
-	 }catch(e){
-	 	throw {
-	    	
-	    	name : "Network Error",
-	    	
-	    	description : "Couldn't contact Github."
-	    	
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://api.github.com/user/emails?access_token=' + token + ' failed'
 	    };
-	 }
+	}
 	 
 	 
 	 
@@ -98,16 +89,15 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 
 };
 
-
 exports.getRedirectURL = function( params ){
 
-	var redirectTo	= getEndpointFromParams( 'https://github.com/login/oauth/authorize' , {
+	var redirectTo	= tools.getEndpointFromParams( 'https://github.com/login/oauth/authorize' , {
     
         client_id : client.client_id,
         
         //response_type : 'code',
         
-        scope : client.scope,
+        scope : params.scope || client.scope,
         
         redirect_uri : (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
         
@@ -118,42 +108,3 @@ exports.getRedirectURL = function( params ){
     return redirectTo;
 
 };
-
-function getEndpointFromParams( baseUrl , params ){
-
-	var url = baseUrl + '?';
-    
-    for ( var param in params ) {
-    
-    	url += param + '=' + encodeURIComponent( params[ param ] ) + '&'
-    
-    };
-    
-    return url;
-
-};
-
-function formBodyFromJSON( params ){
-
-	var body = "";
-    
-    for ( var key in params ) {
-    
-    	body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
-    
-    };
-    
-    return body;
-
-};
-
-function getUrlVarsToJson(url) {
-    var hash;
-    var myJson = {};
-    var hashes = url;//;.slice(url.indexOf('?') + 1).split('&');
-    for (var i = 0; i < hashes.length; i++) {
-        hash = hashes[i].split('=');
-        myJson[hash[0]] = hash[1];
-    }
-    return myJson;
-}

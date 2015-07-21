@@ -2,8 +2,8 @@
 /*
  * Require the client conf file
  */
-
 var client	= require( './client' );
+var tools = require('../oauth2/tools');
 
 /**
  * 
@@ -21,10 +21,10 @@ function getRedirectURL( params )
 	 * Request user authorisation to provider (windows live)
 	 * https://msdn.microsoft.com/fr-fr/library/hh243647.aspx#authcodegrant
 	 */
-	var redirectTo = getEndpointFromParams( 'https://login.live.com/oauth20_authorize.srf' , {
+	var redirectTo = tools.getEndpointFromParams( 'https://login.live.com/oauth20_authorize.srf' , {
         client_id		: client.client_id,
         response_type	: 'code',
-        scope			: client.scope,
+        scope			: params.scope || client.scope,
         redirect_uri	: (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
         state			: 'CSRF='+ params.CSRF +'&from='+ params.provider
     });
@@ -53,7 +53,7 @@ function exchangeCodeForToken( params )
 	 * https://msdn.microsoft.com/fr-fr/library/hh243647.aspx#authcodegrant
 	 */
 	var xhr = new XMLHttpRequest();
-    var body = formBodyFromJSON({
+    var body = tools.formBodyFromJSON({
         'code'			: params[ 'code' ][ 0 ],
         'client_id'		: client.client_id,
         'client_secret'	: client.client_secret, 
@@ -62,7 +62,14 @@ function exchangeCodeForToken( params )
 	});
     xhr.open( 'POST' , 'https://login.live.com/oauth20_token.srf' , false );
     xhr.setRequestHeader( 'Content-Type' , 'application/x-www-form-urlencoded' );
-    xhr.send( body );
+    try{
+        xhr.send( body );
+    }catch(e){
+    	throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://login.live.com/oauth20_token.srf failed'
+	    };
+    }
     
     /*
      * Get a token in response if client has authorized it (see getRedirectURL() above)
@@ -83,7 +90,7 @@ function exchangeCodeForToken( params )
 	 * Get user info (email needed) from provider (windows live)
 	 */
   	var userInfo = getUserInfo( parsedResponse.access_token );
-  	
+
   	/*
 	 * Check for errors returned in the body
 	 */
@@ -111,51 +118,20 @@ function exchangeCodeForToken( params )
  */
 function getUserInfo( token )
 {
-	var xhr	= new XMLHttpRequest();
-	xhr.open( 'GET' , 'https://apis.live.net/v5.0/me?access_token=' + token , false );
-	xhr.send();
-
+    var xhr	= new XMLHttpRequest();
+    xhr.open( 'GET' , 'https://apis.live.net/v5.0/me?access_token=' + token , false );
+    try{
+    	xhr.send();
+    }catch(e){
+    	throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://apis.live.net/v5.0/me?access_token=' + token + ' failed'
+	    };
+    }
 	var response		= xhr.responseText;
 	var parsedResponse	= JSON.parse( response );
 	
 	return parsedResponse;
-}
-
-/**
- * Create an url with base URL and params
- * 
- * @param {string} baseUrl - base url of the application
- * @param {Object} params - convert key:value to key=value
- * 
- * @return {string} url - the final url with given params
- */
-function getEndpointFromParams( baseUrl , params )
-{
-	var url = baseUrl + '?';
-    for ( var param in params )
-    {
-    	url += param +'='+ encodeURIComponent( params[ param ] ) +'&'
-    }
-    
-    return url;
-}
-
-/**
- * Stringify params for body XHR
- * 
- * @param {Object} params - convert key:value to key=value
- * 
- * @return {string} body - the stringify params to append inside a body XHR
- */
-function formBodyFromJSON( params )
-{
-	var body = "";
-    for ( var key in params )
-    {
-    	body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
-    }
-    
-    return body;
 }
 
 exports.getRedirectURL = getRedirectURL;

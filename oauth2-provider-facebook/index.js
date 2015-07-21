@@ -1,10 +1,11 @@
 ﻿var client	= require( './client' );
+var tools = require('../oauth2/tools');
 
 exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	
 	var xhr = new XMLHttpRequest();
     
-    xhr.open( 'POST' , getEndpointFromParams('https://graph.facebook.com/oauth/access_token',{
+    xhr.open( 'POST' , tools.getEndpointFromParams('https://graph.facebook.com/oauth/access_token',{
     
     	'code' : params[ 'code' ][ 0 ],
         
@@ -17,11 +18,17 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
         'grant_type' : 'authorization_code'
     
     }) , false );
-    
-    xhr.send();
-    
+    try{
+        xhr.send();
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request POST https://graph.facebook.com/oauth/access_token failed'
+	    };
+	}
+
   	var response		= xhr.responseText;
-  	var parsedResponse	= parseQueryString( response );
+  	var parsedResponse	= tools.parseQueryString( response );
   	
     /*
 	 * Check for errors returned in the body
@@ -65,13 +72,13 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 
 exports.getRedirectURL = function( params ){
 
-	var redirectTo	= getEndpointFromParams( 'https://www.facebook.com/dialog/oauth' , {
+	var redirectTo	= tools.getEndpointFromParams( 'https://www.facebook.com/dialog/oauth' , {
     
         client_id : client.client_id,
         
         response_type : 'code',
         
-        scope : client.scope,
+        scope : params.scope || client.scope,
         
         redirect_uri : (client.baseUrl + '/oauth2callback').replace( /\/\/oauth2callback/ , '/oauth2callback' ), // "//" -> "/"
         
@@ -88,9 +95,15 @@ function getUserInfo( token ) {
 	var xhr	= new XMLHttpRequest();
 	
 	xhr.open( 'GET' , 'https://graph.facebook.com/me?access_token=' + token , false );
-	
-	xhr.send();
-	
+	try{
+	   xhr.send();
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://graph.facebook.com/me?access_token=' + token + ' failed'
+	    };
+	}
+    
 	var response		= xhr.responseText;
 	
 	var parsedResponse	= JSON.parse( response );
@@ -99,40 +112,3 @@ function getUserInfo( token ) {
 
 };
 
-function getEndpointFromParams( baseUrl , params ){
-
-	var url = baseUrl + '?';
-    
-    for ( var param in params ) {
-    
-    	url += param + '=' + encodeURIComponent( params[ param ] ) + '&'
-    
-    };
-    
-    return url;
-
-};
-
-function formBodyFromJSON( params ){
-
-	var body = "";
-    
-    for ( var key in params ) {
-    
-    	body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
-    
-    };
-    
-    return body;
-
-};
-
-function parseQueryString(queryString) {
-	
-	var qd = {};
-	
-    queryString.split("&").forEach(function(item) {var k = item.split("=")[0], v = decodeURIComponent(item.split("=")[1]); (k in qd) ? qd[k].push(v) : qd[k] = [v,]});
-    
-    return qd;
-    
-};
