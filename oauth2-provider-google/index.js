@@ -42,18 +42,27 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	    	name          : parsedResponse.error,
 	    	description   : parsedResponse.error_description
 	    };
-
-    /*
-	 * Verify token and get account's details.
-     */
-    var JWT				= require( 'JWT' );
-    var userInfo		= JWT.verify( parsedResponse.id_token ).body;
-    //The replace part is a workaround for a base64 encoding issue
-    var parsedUserInfo	= JSON.parse( userInfo.replace(/\0/g,"") );
     
+    /*
+	 * Get user info (email needed) from provider (dropbox)
+	 */
+  	var userInfo = getUserInfo( parsedResponse.access_token );
+  	
+  	/*
+	 * Check for errors returned in the body
+	 */
+    if ( userInfo.error )
+    	throw {
+	    	name		: userInfo.error.type,
+	    	description	: userInfo.error.message
+	    };
+        
+    /*
+     * return the access_token and the email for wakanda authentification
+     */
     return {
-    	email : parsedUserInfo.email,
-    	token : parsedResponse.access_token
+    	email	: userInfo.email,
+    	token	: parsedResponse.access_token
     };
 
 };
@@ -77,3 +86,29 @@ exports.getRedirectURL = function( params ){
     return redirectTo;
 
 };
+
+/**
+ * Get the user info through Dropbox API
+ * 
+ * @param {string} token - access_token from Dropbox authorisation
+ * 
+ * @return {Object} User info https://www.dropbox.com/developers/core/docs#account-info
+ */
+function getUserInfo( token )
+{
+	var xhr	= new XMLHttpRequest();
+	xhr.open( 'GET' , 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + token , false );
+	try{
+        xhr.send();
+	}catch(e){
+		throw {
+	    	name		: 'unreachable_url',
+	    	description	: 'XHR request GET https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + token + ' failed'
+	    };
+	}
+    
+	var response		= xhr.responseText;
+	var parsedResponse	= JSON.parse( response );
+	
+	return parsedResponse;
+}
