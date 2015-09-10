@@ -87,8 +87,8 @@ function callback( request , response ) {
 	/**
 	 * oauth2 authentification success. Create/Update a Wakanda user session.
 	 */
-    createOAuth2Session( exchangeResponse );
 	createWakSession( exchangeResponse );
+    createOAuth2Session( exchangeResponse ); // SessionStorage must be set after the user session creation. Otherwise, the sessionStorage will be reset.
 	response.headers['location'] = config.redirectOnSuccess;
 	response.statusCode = 302;
 	
