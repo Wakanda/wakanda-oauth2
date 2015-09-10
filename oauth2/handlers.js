@@ -10,7 +10,6 @@
  *  - Redirect to OP server
  */
  function init( request , response ) {
-
 	var CSRF		= generateUUID();
 	
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
@@ -26,7 +25,6 @@
     response.statusCode				= 302;
 
     return '';
-
 };
 
 /*
@@ -36,7 +34,6 @@
  *  - TODO : Verify token
  */
 function callback( request , response ) {
-
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
 	var params		= tools.parseQueryString( urlQuery );
 	var state		= ( typeof params.state[ 0 ] == 'string' ) ? tools.parseQueryString( params.state[ 0 ] ) : undefined;
@@ -91,7 +88,7 @@ function callback( request , response ) {
 	 * oauth2 authentification success. Create/Update a Wakanda user session.
 	 */
     createOAuth2Session( exchangeResponse );
-	loginByPassword( exchangeResponse.email );
+	createWakSession( exchangeResponse );
 	response.headers['location'] = config.redirectOnSuccess;
 	response.statusCode = 302;
 	
@@ -99,10 +96,37 @@ function callback( request , response ) {
 }
 
 function createOAuth2Session( info ) {
-
 	sessionStorage[ config._SESSION.EMAIL ] = info.email;
-	
 	sessionStorage[ config._SESSION.TOKEN ] = info.token;
-	
-};
+}
 
+function createWakSession( info ) {
+
+	/*
+	 * Check if user is already registered
+	 */
+	var user = ds[ config._DATACLASS_USER ]( { email : info.email } );
+	
+	/*
+	 * Create an user Account if first login
+	 */
+	if ( ! user )
+	{
+		user = ds[ config._DATACLASS_USER ].createEntity(); 
+		user.UID = generateUUID();
+		user.email = info.email;
+		user.save( );
+	}	
+	
+	/*
+	 * Create a wakanda user session
+	 */
+    createUserSession({
+		ID: user.UID, 
+		fullName: user.email,
+		belongsTo: [],
+		storage: {
+			time:	new Date()
+		}
+	});
+}
