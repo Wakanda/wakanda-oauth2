@@ -56,7 +56,7 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	    	name		: userInfo.error.type,
 	    	description	: userInfo.error.message
 	    };
-        
+
     /*
      * return the access_token and the email for wakanda authentification
      */

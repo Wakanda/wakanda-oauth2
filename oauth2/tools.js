@@ -8,9 +8,9 @@
  */
 function getEndpointFromParams( baseUrl , params )
 {
-    var urlParams = formBodyFromJSON(params);
+	var urlParams = formBodyFromJSON(params);
 	var url = baseUrl + '?' + urlParams;    
-    return url;
+	return url;
 }
 
 /**
@@ -23,11 +23,11 @@ function getEndpointFromParams( baseUrl , params )
 function formBodyFromJSON( params )
 {
 	var body = "";
-    for ( var key in params )
-    {
-    	body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
-    }
-    return body;
+	for ( var key in params )
+	{
+		body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
+	}
+	return body;
 }
 
 /**
@@ -36,26 +36,26 @@ function formBodyFromJSON( params )
 function parseQueryString(queryString)
 {
 	var qd = {};
-    queryString.split("&").forEach(function(item) {
-        var k = item.split("=")[0];
-        var v = decodeURIComponent(item.split("=")[1]);
-        (k in qd) ? qd[k].push(v) : qd[k] = [v,]}
-    );
-    return qd;
+	queryString.split("&").forEach(function(item) {
+		var k = item.split("=")[0];
+		var v = decodeURIComponent(item.split("=")[1]);
+		(k in qd) ? qd[k].push(v) : qd[k] = [v,]}
+	);
+	return qd;
 }
 
 /**
  * 
  */
 function getUrlVarsToJson(url) {
-    var hash;
-    var myJson = {};
-    var hashes = url;//;.slice(url.indexOf('?') + 1).split('&');
-    for (var i = 0; i < hashes.length; i++) {
-        hash = hashes[i].split('=');
-        myJson[hash[0]] = hash[1];
-    }
-    return myJson;
+	var hash;
+	var myJson = {};
+	var hashes = url;//;.slice(url.indexOf('?') + 1).split('&');
+	for (var i = 0; i < hashes.length; i++) {
+		hash = hashes[i].split('=');
+		myJson[hash[0]] = hash[1];
+	}
+	return myJson;
 }
 
 exports.formBodyFromJSON = formBodyFromJSON;

@@ -1,7 +1,7 @@
-﻿ var config	= require( './config' );
- var error	= require( './error' );
- var tools = require('./tools');
- 
+﻿var config	= require( './config' );
+var error	= require( './error' );
+var tools = require('./tools');
+
 /*
  * oauth2 Initiator
  *  - CSRF protection : Generate and store a UUID in the user's session
@@ -11,20 +11,14 @@
  */
  function init( request , response ) {
 	var CSRF		= generateUUID();
-	
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
-	
 	var params		= tools.parseQueryString( urlQuery );
+	var redirectTo	= require( 'oauth2-provider-' + params.provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : params.provider, 'scope': params.scope } );
+	sessionStorage[ config._SESSION.CSRF ] = CSRF;
+	response.headers['location']	= redirectTo;
+	response.statusCode				= 302;
 	
-    var redirectTo	= require( 'oauth2-provider-' + params.provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : params.provider, 'scope': params.scope } );
-	
-    sessionStorage[ config._SESSION.CSRF ] = CSRF;
-	
-    response.headers['location']	= redirectTo;
-    
-    response.statusCode				= 302;
-	
-    return '';
+	return '';
 };
 
 /*
@@ -58,10 +52,10 @@ function callback( request , response ) {
 	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
 	
-    if ( ! sessionStorage[ config._SESSION.CSRF ] && sessionStorage[ config._SESSION.CSRF ] != state[ 'CSRF' ][ 0 ] )
+	if ( ! sessionStorage[ config._SESSION.CSRF ] && sessionStorage[ config._SESSION.CSRF ] != state[ 'CSRF' ][ 0 ] )
 		return error.redirectUrl(response, 'invalid_CSRF');
-    
-    /*
+	
+	/*
 	 * Call the provider's module to exchange received Code for a Token.
 	 * Returns an object with two optional fields : error and data
 	 */
@@ -81,7 +75,7 @@ function callback( request , response ) {
 	 * Check if user.email is returned
 	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
-    if ( !exchangeResponse.email )
+	if ( !exchangeResponse.email )
 		return error.redirectUrl(response, 'missing_user_email');
 
 	/*
@@ -130,7 +124,7 @@ function createWakSession( info ) {
 	/*
 	 * Create a wakanda user session
 	 */
-    createUserSession({
+	createUserSession({
 		ID: user.UID, 
 		fullName: user.email,
 		belongsTo: [],

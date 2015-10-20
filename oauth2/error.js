@@ -1,5 +1,5 @@
- var config	= require( './config' );
- 
+var config	= require( './config' );
+
 /**
  * Convert a provider/internal server error into a user driven error
  */
@@ -62,8 +62,8 @@ function redirectUrl(response, errorCode, errorDescription)
 	console.error('oauth2 error (translated): '+ userError.code +' - '+ userError.description);
 	
 	// Redirect url, add url param errorCode
-   	response.statusCode	= 307;
-   	response.headers['location'] = config.redirectOnFailure +'?error='+ userError.code;
+	response.statusCode	= 307;
+	response.headers['location'] = config.redirectOnFailure +'?error='+ userError.code;
 	return response;	
 }
 
