@@ -16,7 +16,7 @@ Extensible oauth2 Client For Wakanda Server supporting Dropbox, Facebook, Github
 
 `Modules/oauth2/config.json`
 
-`_DATACLASS_USER` : DataClass where to save your users ( should contain at least two string fields : `email` and `UID` )
+`_DATACLASS_USER` : DataClass where to save your users ( should contain at least three string fields: `UID`, `email` and `refresh_token )
 
 `redirectOnSuccess` : redirects to when the login is successful
 

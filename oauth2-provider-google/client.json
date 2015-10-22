@@ -4,4 +4,6 @@
     "redirect_uri": "http://myappdomain.com/oauth2callback",
     "baseUrl":"http://myappdomain.com",
     "scope": "email"
+    "access_type": "offline",
+    "approval_prompt": "auto"
 }

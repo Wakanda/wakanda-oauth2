@@ -3,7 +3,7 @@ var config	= require( './config' );
 /**
  * Convert a provider/internal server error into a user driven error
  */
-var errorList = {
+var errorList	= {
 	// oauth2 handled errors
 	'access_denied': {
 		'code'			: 'authorisation_rejected_by_user',
@@ -56,7 +56,7 @@ function redirectUrl(response, errorCode, errorDescription)
 	console.error('oauth2 error (initial): '+ errorCode +' - '+ errorDescription);
 
 	// Translated internal error into user error through error list
-	var userError = errorList[errorCode] ? errorList[errorCode] : errorList['unknown_error'];
+	var userError	= errorList[errorCode] ? errorList[errorCode] : errorList['unknown_error'];
 
 	// Log translated error
 	console.error('oauth2 error (translated): '+ userError.code +' - '+ userError.description);
@@ -67,4 +67,4 @@ function redirectUrl(response, errorCode, errorDescription)
 	return response;	
 }
 
-exports.redirectUrl = redirectUrl;
+exports.redirectUrl	= redirectUrl;

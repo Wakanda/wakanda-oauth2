@@ -22,10 +22,11 @@ function getEndpointFromParams( baseUrl , params )
  */
 function formBodyFromJSON( params )
 {
-	var body = "";
+	var body = '';
 	for ( var key in params )
 	{
-		body += key + '=' + encodeURIComponent( params[ key ] ) + '&'
+		body += body.length == 0 ? '' : '&';
+		body += key +'='+ encodeURIComponent( params[ key ] );
 	}
 	return body;
 }
