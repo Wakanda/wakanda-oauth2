@@ -29,3 +29,49 @@ exports.postMessage = function(message) {
 	}
 
 };
+
+
+/**
+ * Refresh access_token
+ * 
+ * @return {Object} error
+ * @return {string} error.error - Error code
+ * @return {string} error.error_description - Error description
+ */
+
+exports.refreshToken = function(provider) {
+	var config	= require( './config' );
+	
+	// Get refresh_token
+	var refresh_token = sessionStorage[ config._SESSION.REFRESH_TOKEN ];
+	if ( ! refresh_token ){
+		var user = ds[ config._DATACLASS_USER ]( { UID : currentUser().ID } );
+		refresh_token = user.refresh_token;	
+	}
+	
+	// Error no refresh_token known
+	if ( ! refresh_token )
+		return {
+			error				: "no_refresh_token",
+			error_description	: "Don't know any refresh_token to use"
+		};
+	
+	// Refresh access_token
+	try{
+		var refreshResponse = require( 'oauth2-provider-' + provider ).refreshToken( refresh_token );
+	}catch(e){
+		return e;
+	}
+	
+	// Error no access_token returned
+	if ( ! refreshResponse.access_token )
+	{
+		return {
+			error				: "invalid_refresh_token",
+			error_description	: "No access_token where retrieved."
+		};
+	}
+
+	// Save new access_token
+	sessionStorage[ config._SESSION.TOKEN ] = refreshResponse.access_token;
+};
