@@ -37,7 +37,7 @@ Extensible oauth2 Client For Wakanda Server supporting Dropbox, Facebook, Github
 - `exchangeCodeForToken()`
 - `getRedirectURL()`
 
-Both methods return exception errors or a success value. An exception is a JSON object with a `name` and `description` properties.
+Both methods return exception errors or a success value. An exception is a JSON object with a `error` and `error_description` properties.
 
 ##Feature Request / Bug Report
 Please open an issue for any bugs or feature requests.

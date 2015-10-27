@@ -2,7 +2,6 @@
  * TODO
  *  - Add auto discovery component using configuration URL, ex : https://accounts.google.com/.well-known/openid-configuration
  *  - Declare dependencies in a packages.json file
- *  - See if it is possible to use the Wakanda Crypto library
  */
 
 

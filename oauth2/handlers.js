@@ -9,7 +9,8 @@ var tools	= require('./tools');
  *  - Get back a redirection URL to OP
  *  - Redirect to OP server
  */
- function init( request , response ) {
+ function init( request , response )
+ {
 	var CSRF		= generateUUID();
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
 	var params		= tools.parseQueryString( urlQuery );
@@ -27,7 +28,8 @@ var tools	= require('./tools');
  *  - Call the provider's module to exchange received Code for a Token
  *  - TODO : Verify token
  */
-function callback( request , response ) {
+function callback( request , response )
+{
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
 	var params		= tools.parseQueryString( urlQuery );
 	var state		= ( typeof params.state[ 0 ] == 'string' ) ? tools.parseQueryString( params.state[ 0 ] ) : undefined;
@@ -68,7 +70,7 @@ function callback( request , response ) {
 		 * Handle oauth2 errors
 		 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 		 */
-		return error.redirectUrl(response, e.name, e.description);
+		return error.redirectUrl(response, e.error, e.error_description);
 	}
 	
 	/**
@@ -105,7 +107,8 @@ function callback( request , response ) {
 	return response;
 }
 
-function createWakSession( info ) {
+function createWakSession( info )
+{
 
 	/*
 	 * Check if user is already registered

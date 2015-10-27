@@ -19,8 +19,8 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 		xhr.send(body);
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request POST https://github.com/login/oauth/access_token failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request POST https://github.com/login/oauth/access_token failed'
 		};
 	}
 	
@@ -33,10 +33,7 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	
 	
 	if ( parsedResponse.error ) {
-		throw {
-			name : parsedResponse.error,
-			description : parsedResponse.error_description
-		};
+		throw parsedResponse;
 	}
 	
 	/**
@@ -49,8 +46,8 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 		xhr.send();
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request GET https://api.github.com/user/emails?access_token=' + token + ' failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request GET https://api.github.com/user/emails?access_token=' + token + ' failed'
 		};
 	}
 	

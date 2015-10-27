@@ -42,8 +42,8 @@ function getRedirectURL( params )
  * 
  * @return {string} partial url with parameters
  * @throw {Object} error oauth2 errors
- * @throw {Object} error.name
- * @throw {Object} error.description
+ * @throw {Object} error.error
+ * @throw {Object} error.error_description
  */
 function exchangeCodeForToken( params )
 {
@@ -66,8 +66,8 @@ function exchangeCodeForToken( params )
 		xhr.send( body );
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request POST https://login.live.com/oauth20_token.srf failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request POST https://login.live.com/oauth20_token.srf failed'
 		};
 	}
 	
@@ -81,10 +81,7 @@ function exchangeCodeForToken( params )
 	 * Check for errors returned in the body
 	 */
 	if ( parsedResponse.error )
-		throw {
-			name		: parsedResponse.error,
-			description	: parsedResponse.error_description
-		};
+		throw parsedResponse;
 
 	/*
 	 * Get user info (email needed) from provider (windows live)
@@ -96,8 +93,8 @@ function exchangeCodeForToken( params )
 	 */
 	if ( userInfo.error )
 		throw {
-			name		: userInfo.error.type,
-			description	: userInfo.error.message
+			error				: userInfo.error.type,
+			error_description	: userInfo.error.message
 		};
 	
 	/*
@@ -124,8 +121,8 @@ function getUserInfo( token )
 		xhr.send();
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request GET https://apis.live.net/v5.0/me?access_token=' + token + ' failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request GET https://apis.live.net/v5.0/me?access_token=' + token + ' failed'
 		};
 	}
 	var response		= xhr.responseText;

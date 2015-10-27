@@ -16,8 +16,8 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 		xhr.send();
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request POST https://graph.facebook.com/oauth/access_token failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request POST https://graph.facebook.com/oauth/access_token failed'
 		};
 	}
 
@@ -29,10 +29,7 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	 */
 	if ( parsedResponse.error ) {
 	
-		throw {
-			name		: parsedResponse.error,
-			description	: parsedResponse.error_description
-		};
+		throw parsedResponse;
 	}
 	
 	var userInfo		= getUserInfo( parsedResponse.access_token );
@@ -43,8 +40,8 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	if ( userInfo.error ) {
 	
 		throw {
-			name		: userInfo.error.type,
-			description	: userInfo.error.message
+			error				: userInfo.error.type,
+			error_description	: userInfo.error.message
 		};
 	}
 	
@@ -75,8 +72,8 @@ function getUserInfo( token ) {
 		xhr.send();
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request GET https://graph.facebook.com/me?access_token=' + token + ' failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request GET https://graph.facebook.com/me?access_token=' + token + ' failed'
 		};
 	}
 	

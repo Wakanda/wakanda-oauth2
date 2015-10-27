@@ -46,20 +46,20 @@ var errorList	= {
  * 
  * @return {string} response - The updated Callback response
  */
-function redirectUrl(response, errorCode, errorDescription)
+exports.redirectUrl = function redirectUrl(response, errorCode, errorDescription)
 {
 	// Init
 	errorCode 			= errorCode ? errorCode : 'unknown_error';
 	errorDescription 	= errorDescription ? errorDescription : '';
 	
 	// Log provider error
-	console.error('oauth2 error (initial): '+ errorCode +' - '+ errorDescription);
+	console.error('[ERROR] oauth2 error (initial): '+ errorCode +' - '+ errorDescription);
 
 	// Translated internal error into user error through error list
 	var userError	= errorList[errorCode] ? errorList[errorCode] : errorList['unknown_error'];
 
 	// Log translated error
-	console.error('oauth2 error (translated): '+ userError.code +' - '+ userError.description);
+	console.error('[ERROR] oauth2 error (translated): '+ userError.code +' - '+ userError.description);
 	
 	// Redirect url, add url param errorCode
 	response.statusCode	= 307;
@@ -67,4 +67,3 @@ function redirectUrl(response, errorCode, errorDescription)
 	return response;	
 }
 
-exports.redirectUrl	= redirectUrl;

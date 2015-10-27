@@ -19,8 +19,8 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 		xhr.send( body );
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request POST https://www.googleapis.com/oauth2/v3/token failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request POST https://www.googleapis.com/oauth2/v3/token failed'
 		};
 	}
 	
@@ -31,24 +31,16 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	 * Check for errors returned in the body
 	 */
 	if ( parsedResponse.error )
-		throw {
-			name		: parsedResponse.error,
-			description	: parsedResponse.error_description
-		};
+		throw parsedResponse;
 	
 	/*
 	 * Get user info (email needed) from provider (dropbox)
 	 */
-	var userInfo	= getUserInfo( parsedResponse.access_token );
-	
-	/*
-	 * Check for errors returned in the body
-	 */
-	if ( userInfo.error )
-		throw {
-			name		: userInfo.error.type,
-			description	: userInfo.error.message
-		};
+	try{
+		var userInfo = getUserInfo( parsedResponse.access_token );
+	}catch(e){
+		throw e;
+	}
 	
 	/*
 	 * return the access_token and the email for wakanda authentification
@@ -60,7 +52,7 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	};
 };
 
-exports.getRedirectURL	= function( params ){
+exports.getRedirectURL = function( params ){
 
 	var redirectTo	= tools.getEndpointFromParams( 'https://accounts.google.com/o/oauth2/auth' , {
 		client_id		: client.client_id,
@@ -76,11 +68,10 @@ exports.getRedirectURL	= function( params ){
 };
 
 /**
- * Get the user info through Dropbox API
+ * Get the user info through Google API
  * 
- * @param {string} token - access_token from Dropbox authorisation
- * 
- * @return {Object} User info https://www.dropbox.com/developers/core/docs#account-info
+ * @param {string} token - access_token from Google authorisation
+ * @return {Object} User info
  */
 function getUserInfo( token )
 {
@@ -90,13 +81,22 @@ function getUserInfo( token )
 		xhr.send();
 	}catch(e){
 		throw {
-			name		: 'unreachable_url',
-			description	: 'XHR request GET https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + token + ' failed'
+			error				: 'unreachable_url',
+			error_description	: 'XHR request GET https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=' + token + ' failed'
 		};
 	}
 	
 	var response		= xhr.responseText;
 	var parsedResponse	= JSON.parse( response );
 	
+	/*
+	 * Check for errors returned in the body
+	 */
+	if ( parsedResponse.error )
+		throw parsedResponse;
+		
+	return parsedResponse;
+}
+
 	return parsedResponse;
 }
