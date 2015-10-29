@@ -36,11 +36,13 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	/*
 	 * Get user info (email needed) from provider (dropbox)
 	 */
-	try{
-		var userInfo = getUserInfo( parsedResponse.access_token );
-	}catch(e){
-		throw e;
-	}
+	var userInfo = getUserInfo( parsedResponse.access_token );
+	
+	/*
+	 * Check for errors returned in the body
+	 */
+	if ( userInfo.error )
+		throw parsedResponse;
 	
 	/*
 	 * return the access_token and the email for wakanda authentification
@@ -88,12 +90,6 @@ function getUserInfo( token )
 	
 	var response		= xhr.responseText;
 	var parsedResponse	= JSON.parse( response );
-	
-	/*
-	 * Check for errors returned in the body
-	 */
-	if ( parsedResponse.error )
-		throw parsedResponse;
 		
 	return parsedResponse;
 }
@@ -128,12 +124,6 @@ exports.refreshToken = function( refresh_token ){
 	
 	var response		= xhr.responseText;
 	var parsedResponse	= JSON.parse( response );
-
-	/*
-	 * Check for errors returned in the body
-	 */
-	if ( parsedResponse.error )
-		throw parsedResponse;
 		
 	return parsedResponse;
 };

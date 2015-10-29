@@ -46,12 +46,13 @@ exports.refreshToken = function(provider) {
 	var refresh_token = sessionStorage[ config._SESSION.REFRESH_TOKEN ];
 	if ( ! refresh_token ){
 		var user = ds[ config._DATACLASS_USER ]( { UID : currentUser().ID } );
-		refresh_token = user.refresh_token;	
+		if (user)
+			refresh_token = user.refresh_token;	
 	}
 	
 	// Error no refresh_token known
 	if ( ! refresh_token )
-		return {
+		throw {
 			error				: "no_refresh_token",
 			error_description	: "Don't know any refresh_token to use"
 		};
@@ -60,13 +61,17 @@ exports.refreshToken = function(provider) {
 	try{
 		var refreshResponse = require( 'oauth2-provider-' + provider ).refreshToken( refresh_token );
 	}catch(e){
-		return e;
+		throw e;
 	}
 	
+	// Check for errors returned in the body
+	if ( refreshResponse.error )
+		throw refreshResponse;
+
 	// Error no access_token returned
 	if ( ! refreshResponse.access_token )
 	{
-		return {
+		throw {
 			error				: "invalid_refresh_token",
 			error_description	: "No access_token where retrieved."
 		};
