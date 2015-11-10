@@ -2,5 +2,6 @@
     "client_id": "xxxxxxxxxxxxxxxxx",
     "client_secret": "xxxxxxxxxxxxxxxxx",
     "redirect_uri": "http://myappdomain.com/oauth2callback",
-    "baseUrl":"http://myappdomain.com"
+    "baseUrl":"http://myappdomain.com",
+    "authentication": false
 }

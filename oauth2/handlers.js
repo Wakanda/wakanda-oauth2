@@ -9,13 +9,14 @@ var tools	= require('./tools');
  *  - Get back a redirection URL to OP
  *  - Redirect to OP server
  */
- function init( request , response )
- {
+function init( request , response )
+{
 	var CSRF		= generateUUID();
 	var urlQuery	= request.rawURL.split( '?' )[ 1 ];//workaround
 	var params		= tools.parseQueryString( urlQuery );
-	var redirectTo	= require( 'oauth2-provider-' + params.provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : params.provider, 'scope': params.scope, 'access_type': params.access_type, 'approval_prompt': params.approval_prompt } );
-	sessionStorage[ config._SESSION.CSRF ]	= CSRF;
+	var provider	= params.provider[ 0 ];
+	var redirectTo	= require( 'oauth2-provider-' + provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : provider, 'scope': params.scope, 'access_type': params.access_type, 'approval_prompt': params.approval_prompt } );
+	sessionStorage[ provider +'_'+ config._SESSION.CSRF ]	= CSRF;
 	response.headers['location']			= redirectTo;
 	response.statusCode						= 302;
 	
@@ -54,7 +55,7 @@ function callback( request , response )
 	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
 	
-	if ( ! sessionStorage[ config._SESSION.CSRF ] && sessionStorage[ config._SESSION.CSRF ] != state[ 'CSRF' ][ 0 ] )
+	if ( ! sessionStorage[ provider +'_'+ config._SESSION.CSRF ] && sessionStorage[ provider +'_'+ config._SESSION.CSRF ] != state[ 'CSRF' ][ 0 ] )
 		return error.redirectUrl(response, 'invalid_CSRF');
 	
 	/*
@@ -79,68 +80,74 @@ function callback( request , response )
 	 */
 	if ( !exchangeResponse.email )
 		return error.redirectUrl(response, 'missing_user_email');
-
-	/*
-	 * Keep CSRF in session storage. Session storage is reset with createUserSession()
-	 */
-	
-	var CSRF			= sessionStorage[ config._SESSION.CSRF ];
-	var refresh_token	= sessionStorage[ config._SESSION.REFRESH_TOKEN ];
 	
 	/**
 	 * oauth2 authentification success. Create/Update a Wakanda user session.
 	 */
-	createWakSession( exchangeResponse );
 	
-	/*
-	 * Save again the CSRF in the session storage
-	 * SessionStorage must be set after the user session creation. Otherwise, the sessionStorage will be reset.
-	 */
-	sessionStorage[ config._SESSION.CSRF ]			= CSRF;
-	sessionStorage[ config._SESSION.EMAIL ]			= exchangeResponse.email;
-	sessionStorage[ config._SESSION.TOKEN ]			= exchangeResponse.token;
-	sessionStorage[ config._SESSION.REFRESH_TOKEN ]	= exchangeResponse.refresh_token ? exchangeResponse.refresh_token : refresh_token;
+	createWakSession( exchangeResponse, provider );
 	
+
 	response.headers['location'] = config.redirectOnSuccess;
 	response.statusCode = 302;
 	
 	return response;
 }
 
-function createWakSession( info )
+function createWakSession( userInfo, provider )
 {
+	/*
+	 * Keep CSRF in session storage. Session storage is reset with createUserSession()
+	 */
+	var CSRF			= sessionStorage[ provider +'_'+ config._SESSION.CSRF ];
+	var refresh_token	= sessionStorage[ provider +'_'+ config._SESSION.REFRESH_TOKEN ];
 
 	/*
 	 * Check if user is already registered
 	 */
-	var user = ds[ config._DATACLASS_USER ]( { email : info.email } );
+	 // TODO user currentUser().ID instead ?
+	var user = ds[ config._DATACLASS_USER ]( { 'email': userInfo.email, 'provider': provider } );
 	
 	/*
 	 * Create an user Account if first login
 	 */
 	if ( ! user )
 	{
-		user				= ds[ config._DATACLASS_USER ].createEntity(); 
-		user.UID			= generateUUID();
-		user.email			= info.email;
-		user.refresh_token	= info.refresh_token; // refresh_token needs to survive a server shutdown
+		debugger;
+		user				= ds[ config._DATACLASS_USER ].createEntity();
+		user.UID			= currentUser().ID ? currentUser().ID : generateUUID();
+		user.provider		= provider;
+		user.email			= userInfo.email;
+		user.refresh_token	= userInfo.refresh_token; // refresh_token needs to survive a server shutdown
 		user.save( );
 	}
-	else if (info.refresh_token)
+	else if ( userInfo.refresh_token )
 	{
-		user.refresh_token	= info.refresh_token; // refresh_token needs to survive a server shutdown
+		user.refresh_token	= userInfo.refresh_token; // refresh_token needs to survive a server shutdown
 		user.save( );		
 	}
 	
 	/*
 	 * Create a wakanda user session
 	 */
-	createUserSession({
-		ID: user.UID, 
-		fullName: user.email,
-		belongsTo: [],
-		storage: {
-			time:	new Date()
-		}
-	});
+	if ( require( 'oauth2-provider-' + provider ).doAuthentication() )
+	{
+		createUserSession({
+			ID: user.UID, 
+			name: user.email,
+			belongsTo: [],
+			storage: {
+				time: new Date()
+			}
+		});
+	}
+	
+	/*
+	 * Save again the CSRF in the session storage
+	 * SessionStorage must be set after the user session creation. Otherwise, the sessionStorage will be reset.
+	 */
+	sessionStorage[ provider +'_'+ config._SESSION.CSRF ]			= CSRF;
+	sessionStorage[ provider +'_'+ config._SESSION.EMAIL ]			= userInfo.email;
+	sessionStorage[ provider +'_'+ config._SESSION.TOKEN ]			= userInfo.token;
+	sessionStorage[ provider +'_'+ config._SESSION.REFRESH_TOKEN ]	= userInfo.refresh_token ? userInfo.refresh_token : refresh_token;
 }

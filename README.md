@@ -16,7 +16,7 @@ Extensible oauth2 Client For Wakanda Server supporting Dropbox, Facebook, Github
 
 `Modules/oauth2/config.json`
 
-`_DATACLASS_USER` : DataClass where to save your users ( should contain at least three string fields: `UID`, `email` and `refresh_token )
+`_DATACLASS_USER` : DataClass where to save your users ( should contain at least three string fields: `UID`, `provider`, `email` and `refresh_token )
 
 `redirectOnSuccess` : redirects to when the login is successful
 
@@ -39,5 +39,10 @@ Extensible oauth2 Client For Wakanda Server supporting Dropbox, Facebook, Github
 
 Both methods return exception errors or a success value. An exception is a JSON object with a `error` and `error_description` properties.
 
+## Use of setLoginListener()
+
+If you use a setLoginListener() in your solution, be aware that currentUSer().ID is used to authentified a user session. This ID should be static over time and always point to the same user.
+
 ##Feature Request / Bug Report
 Please open an issue for any bugs or feature requests.
+

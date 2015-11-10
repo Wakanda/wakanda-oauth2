@@ -43,9 +43,9 @@ exports.refreshToken = function(provider) {
 	var config	= require( './config' );
 	
 	// Get refresh_token
-	var refresh_token = sessionStorage[ config._SESSION.REFRESH_TOKEN ];
+	var refresh_token = sessionStorage[ provider +'_'+ config._SESSION.REFRESH_TOKEN ];
 	if ( ! refresh_token ){
-		var user = ds[ config._DATACLASS_USER ]( { UID : currentUser().ID } );
+		var user = ds[ config._DATACLASS_USER ]( { 'UID': currentUser().ID } );
 		if (user)
 			refresh_token = user.refresh_token;	
 	}
@@ -78,5 +78,5 @@ exports.refreshToken = function(provider) {
 	}
 
 	// Save new access_token
-	sessionStorage[ config._SESSION.TOKEN ] = refreshResponse.access_token;
+	sessionStorage[ provider +'_'+ config._SESSION.TOKEN ] = refreshResponse.access_token;
 };

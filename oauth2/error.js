@@ -66,4 +66,3 @@ exports.redirectUrl = function redirectUrl(response, errorCode, errorDescription
 	response.headers['location'] = config.redirectOnFailure +'?error='+ userError.code;
 	return response;	
 }
-

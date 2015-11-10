@@ -9,7 +9,7 @@
 function getEndpointFromParams( baseUrl , params )
 {
 	var urlParams = formBodyFromJSON(params);
-	var url = baseUrl + '?' + urlParams;    
+	var url = baseUrl + '?' + urlParams;
 	return url;
 }
 

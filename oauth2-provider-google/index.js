@@ -1,8 +1,13 @@
 ﻿var client	= require( './client' );
 var tools	= require('../oauth2/tools');
 
-exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
+exports.doAuthentication = function()
+{
+	return client.authentication || false;
+};
 
+exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
+	
 	var xhr	= new XMLHttpRequest();
 	
 	var body = tools.formBodyFromJSON({
@@ -117,8 +122,8 @@ exports.refreshToken = function( refresh_token ){
 		xhr.send( body );
 	}catch(e){
 		throw {
-			error				: 'unreachable_url',
-			error_description	: 'XHR request POST https://www.googleapis.com/oauth2/v3/token failed'
+			error				: "unreachable_url",
+			error_description	: "XHR request POST https://www.googleapis.com/oauth2/v3/token failed"
 		};
 	}
 	
