@@ -1,11 +1,19 @@
 ﻿var client	= require( './client' );
 var tools	= require('../oauth2/tools');
 
-exports.doAuthentication = function()
-{
-	return client.authentication || false;
-};
 
+/**
+ * How to exchange the authorisation code for an access_token/refresh_token ? 
+ * Get the access_token/refresh_token through Google API
+ * 
+ * @param {Object} params
+ * @param {string} params.code[0] - authorisation code 
+ * 
+ * @return {Object} userInfo
+ * @return {Object} userInfo.email - User email returned by the provider
+ * @return {Object} userInfo.access_token - Used to authentified every request to the provider
+ * @return {Object} [userInfo.refresh_token] - [Optionnal] refresh_token is not sent every time
+ */
 exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	
 	var xhr	= new XMLHttpRequest();
@@ -59,6 +67,20 @@ exports.exchangeCodeForToken = function exchangeCodeForToken( params ) {
 	};
 };
 
+
+/**
+ * How to get an authorisation code ?
+ * Get the authorisation code through Google API
+ * 
+ * @param {Object} params
+ * @param {string} params.CSRF - Security key 
+ * @param {string} params.provider - Provider called
+ * @param {string} params.scope - Scope asked for the user session
+ * @param {string} params.access_type - access_type asked for the user session
+ * @param {string} params.approval_prompt - approval_prompt asked for the user session
+ * 
+ * @return {string} - redirectTo - url where to redirect after
+ */
 exports.getRedirectURL = function( params ){
 
 	var redirectTo	= tools.getEndpointFromParams( 'https://accounts.google.com/o/oauth2/auth' , {
@@ -73,6 +95,7 @@ exports.getRedirectURL = function( params ){
 	
 	return redirectTo;
 };
+
 
 /**
  * Get the user info through Google API
@@ -99,7 +122,9 @@ function getUserInfo( token )
 	return parsedResponse;
 }
 
+
 /**
+ * How to refresh the access_token using the refresh_token ?
  * Get the user info through Google API
  * 
  * @param {string} refresh_token - refresh_token from Google authorisation
@@ -131,4 +156,15 @@ exports.refreshToken = function( refresh_token ){
 	var parsedResponse	= JSON.parse( response );
 		
 	return parsedResponse;
+};
+
+
+/**
+ * Do you when to authenticate the user on Wakanda when authentified by the provider ?
+ *
+ * @return {Boolean} authentication
+ */
+exports.doAuthentication = function()
+{
+	return client.authentication || false;
 };

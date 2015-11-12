@@ -4,12 +4,11 @@
  *  - Declare dependencies in a packages.json file
  */
 
-
 /*
  * Handler for service messages
  */
 
-exports.postMessage = function(message) {
+exports.postMessage = function( message ) {
 	
 	var moduleFolderPath	= File(module.filename).parent.path;
 	var handlersFilePath	= moduleFolderPath + 'handlers.js';
@@ -27,7 +26,6 @@ exports.postMessage = function(message) {
 		addHttpRequestHandler('^/oauth2callback', handlersFilePath, 'callback');
 		
 	}
-
 };
 
 
@@ -39,23 +37,15 @@ exports.postMessage = function(message) {
  * @return {string} error.error_description - Error description
  */
 
-exports.refreshToken = function(provider) {
+exports.refreshToken = function( provider ) {
 	var config	= require( './config' );
 	
 	// Get refresh_token
-	var refresh_token = sessionStorage[ provider +'_'+ config._SESSION.REFRESH_TOKEN ];
-	if ( ! refresh_token ){
-		var user = ds[ config._DATACLASS_USER ]( { 'UID': currentUser().ID } );
-		if (user)
-			refresh_token = user.refresh_token;	
+	try {
+		var refresh_token = config.getRefreshToken( provider );
+	}catch(e){
+		throw e;
 	}
-	
-	// Error no refresh_token known
-	if ( ! refresh_token )
-		throw {
-			error				: "no_refresh_token",
-			error_description	: "Don't know any refresh_token to use"
-		};
 	
 	// Refresh access_token
 	try{
@@ -78,5 +68,5 @@ exports.refreshToken = function(provider) {
 	}
 
 	// Save new access_token
-	sessionStorage[ provider +'_'+ config._SESSION.TOKEN ] = refreshResponse.access_token;
+	config.setAccessToken( provider, refreshResponse.access_token );
 };
