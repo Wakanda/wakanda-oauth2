@@ -2,25 +2,23 @@
 /**
  * Where do you want to redirect the user if the oauth2 authentication succeed ?
  */
-exports.redirectOnSuccess = "/app/index.html";
-
+exports.redirectOnSuccess = "/app/index.html?auth_result=success";
 
 /**
  * Where do you want to redirect the user if the oauth2 authentication failed ?
  */
-exports.redirectOnFailure = "/app/index.html";
-
+exports.redirectOnFailure = "/app/index.html?auth_result=failure";
 
 /**
  * Use sessionStorage to save the user session info
  * Session life time
  */
 var _SESSION = {
-		"EMAIL"			: "OAUTH2_EMAIL",
-		"CSRF"			: "OAUTH2_CSRF",
-		"TOKEN"			: "OAUTH2_TOKEN",
-		"REFRESH_TOKEN"	: "OAUTH2_REFRESH_TOKEN"
-	};
+	"EMAIL"			: "OAUTH2_EMAIL",
+	"CSRF"			: "OAUTH2_CSRF",
+	"TOKEN"			: "OAUTH2_TOKEN",
+	"REFRESH_TOKEN"	: "OAUTH2_REFRESH_TOKEN"
+};
 
 
 /**
@@ -39,15 +37,13 @@ var _DATACLASS_USER = "OAUTH2_USER";
  * @param {Object} userInfo.token - The access_token returned by the provider. (Use setAccessToken() to save it)
  * @param {Object} [userInfo.refresh_token] - [optionnal] The refresh_token returned by the provider. This token is not sent every time. (Use setRefreshToken() to save it)
  */
-exports.setSession = function( provider, userInfo )
-{
+exports.setSession = function( provider, userInfo ){
 	//Check if user is already registered
-// TODO user currentUser().ID instead ?
+	// TODO user currentUser().ID instead ?
 	var user = ds[ _DATACLASS_USER ]( { 'email': userInfo.email, 'provider': provider } );
 	
-	//Create an user Account if first login
-	if ( ! user )
-	{
+	//Create a user Account if first login
+	if ( ! user ){
 		user			= ds[ _DATACLASS_USER ].createEntity();
 		user.UID		= currentUser().ID ? currentUser().ID : generateUUID();
 		user.provider	= provider;
@@ -56,8 +52,7 @@ exports.setSession = function( provider, userInfo )
 	}
 	
 	//Create a wakanda user session
-	if ( require( 'oauth2-provider-' + provider ).doAuthentication() )
-	{
+	if ( require( 'oauth2-provider-' + provider ).doAuthentication() ){
 		createUserSession({
 			ID: user.UID, 
 			name: user.email,
@@ -77,19 +72,20 @@ exports.setSession = function( provider, userInfo )
  * @param {string} provider - The provider which authentified the user and provides a session
  * @param {string} [refresh_token] - [optionnal] The refresh_token returned by the provider. This token is not sent every time.
  */
-exports.setRefreshToken = function( provider, refresh_token )
-{
-	if ( ! refresh_token )
+exports.setRefreshToken = function( provider, refresh_token ){
+	if ( ! refresh_token ){
 		return; // refresh_token is not sent every time.
+	}		
 	
-	// Save refresh_token in the sessionStorage for later use
-	sessionStorage[ provider +'_'+ _SESSION.REFRESH_TOKEN ]	= refresh_token;
+	// Save refresh_token in the cache for later use
+	config.setElement(currentUser().ID + ":" + provider + ':' + _NAMESPACE.SESSION.REFRESH_TOKEN, refresh_token);
 
 	// Save refresh_token in DB to survive a server shutdown
 	var user = ds[ _DATACLASS_USER ]( { 'UID': currentUser().ID } );
-	if (user)
+	if (user){
 		user.refresh_token = refresh_token;
 		user.save( );
+	}		
 }
 
 
@@ -101,9 +97,9 @@ exports.setRefreshToken = function( provider, refresh_token )
 exports.getRefreshToken = function( provider )
 {
 	// Get refresh_token
-	var refresh_token = sessionStorage[ provider +'_'+ _SESSION.REFRESH_TOKEN ];
+	var refresh_token = config.getElement(currentUser().ID + ":" + provider + ':' + _NAMESPACE.SESSION.REFRESH_TOKEN);
 	
-	// If nothing in the sessionStorage, then fallback in the database
+	// If we didn't find it in the cache, then fallback to the database
 	if ( ! refresh_token ){
 		var user = ds[ _DATACLASS_USER ]( { 'UID': currentUser().ID } );
 		if (user)
@@ -133,9 +129,31 @@ exports.setAccessToken = function( provider, access_token )
 	if ( ! access_token )
 		throw {
 			error				: "no_access_token",
-			error_description	: "Don't received any access_token to save"
+			error_description	: "Didn't receive any access_token to save"
 		};
 	
-	// Save access_token in sessionStorage for later use.
-	sessionStorage[ provider +'_'+ _SESSION.TOKEN ] = access_token;
+	// Save access_token for later use.
+	config.setElement(currentUser().ID + ":" + provider + ':' + _NAMESPACE.SESSION.TOKEN, access_token);
 }
+
+/**
+ * Mandatory method to save element to the cache
+ * You can replace the code to use an external cache (redis, memcached..)
+ */
+config.setElement = function(key, value){
+	
+	storage[key] = value;
+	
+	return true;
+};
+
+/**
+ * Mandatory method to read element from the cache
+ * You can replace the code to use an external cache (redis, memcached..)
+ */
+config.getElement = function(key){
+	
+	var result = storage[key];
+	
+	return result;
+};

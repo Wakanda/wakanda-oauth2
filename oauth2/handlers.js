@@ -16,7 +16,9 @@ function init( request , response )
 	var params		= tools.parseQueryString( urlQuery );
 	var provider	= params.provider[ 0 ];
 	var redirectTo	= require( 'oauth2-provider-' + provider ).getRedirectURL( { 'CSRF' : CSRF , 'provider' : provider, 'scope': params.scope, 'access_type': params.access_type, 'approval_prompt': params.approval_prompt } );
-	sessionStorage[ provider +'_CSRF' ]	= CSRF;
+	
+	config.setElement(currentSession().ID + ":" + provider +':CSRF', CSRF);
+	
 	response.headers['location']			= redirectTo;
 	response.statusCode						= 302;
 	
@@ -54,8 +56,9 @@ function callback( request , response )
 	 * Verify that the CSRF parameter value corresponds to the user's session.
 	 * Redirect on wakanda failure page. Return through url params a wakanda 'error'
 	 */
+	var csrfValue = config.getElement(currentSession().ID + ":" + provider +':CSRF');
 	
-	if ( ! sessionStorage[ provider +'_CSRF' ] && sessionStorage[ provider +'_CSRF' ] != state[ 'CSRF' ][ 0 ] )
+	if ( ! csrfValue && csrfValue != state[ 'CSRF' ][ 0 ] )
 		return error.redirectUrl(response, 'invalid_CSRF');
 	
 	/*
@@ -89,6 +92,7 @@ function callback( request , response )
 		config.setRefreshToken( provider, exchangeResponse.refresh_token );
 		config.setAccessToken( provider, exchangeResponse.token);
 	}catch(e){
+		e.error = "RUNTIME_ERROR";
 		return error.redirectUrl(response, e.error, e.error_description);
 	}
 		
